@@ -19,13 +19,12 @@ enum Status {
   SAVED
 }
 
-model Application {
+model Job {
   id          String   @id @default(cuid())
   title       String
   company     String
   status      Status   @default(SAVED)
-  link        String
-  dateApplied DateTime
+  dateApplied DateTime?
   postingUrl  String
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id])
@@ -40,7 +39,7 @@ model User {
   image         String?
   createdAt     DateTime      @default(now()) @map(name: "created_at")
   updatedAt     DateTime      @updatedAt @map(name: "updated_at")
-  applications  Application[]
+  jobs          Job[]
   accounts      Account[]
   sessions      Session[]
 }
