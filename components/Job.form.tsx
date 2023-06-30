@@ -1,6 +1,6 @@
 "use client";
 import { createJob } from "@/lib/api.service";
-import { ApplicationRequest } from "@/lib/validators/types";
+import { ApplicationRequest } from "@/@types";
 import { SubmitHandler, useForm } from "react-hook-form";
 import Button from "./Button";
 import Form from "./Form";
