@@ -5,5 +5,5 @@ export const ApplicationValidator = z.object({
   company: z.string().min(1),
   status: z.enum(["APPLIED", "INTERVIEW", "OFFER", "REJECTED", "SAVED"]),
   postingUrl: z.string().url(),
-  dateApplied: z.date(),
+  dateApplied: z.coerce.date(),
 });
