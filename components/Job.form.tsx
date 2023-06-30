@@ -30,14 +30,6 @@ const JobForm = () => {
     ),
   });
 
-  const title = watch("title");
-  const company = watch("company");
-  const status = watch("status");
-  const dateApplied = watch("dateApplied");
-  const postingUrl = watch("postingUrl");
-
-  console.log({ errors, title, company, status, dateApplied, postingUrl });
-
   const submit: SubmitHandler<Inputs> = async (data) => {
     console.log({ data });
     const [res, err] = await createApplication(data);

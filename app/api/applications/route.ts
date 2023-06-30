@@ -30,7 +30,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
     }
 
     const reqBod: ApplicationRequest = await req.json();
-    console.log({ reqBod });
     const body = ApplicationValidator.parse(reqBod);
 
     const result = await prisma.job.create({
