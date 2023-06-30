@@ -1,5 +1,5 @@
 "use client";
-import { createJob } from "@/lib/api.service";
+import { createApplication } from "@/lib/api.service";
 import { ApplicationRequest } from "@/@types";
 import { SubmitHandler, useForm } from "react-hook-form";
 import Button from "./Button";
@@ -40,7 +40,7 @@ const JobForm = () => {
 
   const submit: SubmitHandler<Inputs> = async (data) => {
     console.log({ data });
-    const [res, err] = await createJob(data);
+    const [res, err] = await createApplication(data);
     console.log({ res, err });
   };
   return (
