@@ -4,10 +4,11 @@ import {
   UseFormRegister,
   RegisterOptions,
   FieldError,
+  FieldValues,
 } from "react-hook-form";
 type FormProps = React.HTMLAttributes<HTMLFormElement>;
 
-type InputProps<TFormValues> = {
+type InputProps<TFormValues extends FieldValues> = {
   label: string;
   register: UseFormRegister<TFormValues>;
   rules?: RegisterOptions;
@@ -29,7 +30,7 @@ const Form = ({ ...props }: FormProps) => {
   );
 };
 
-const Input = <TFormValues extends Record<string, unknown>>({
+const Input = <TFormValues extends {}>({
   className,
   name,
   label,
