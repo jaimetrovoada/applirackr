@@ -23,16 +23,25 @@ export async function createApplication(payload: ApplicationRequest) {
   }
 }
 
-export async function getUserApplications() {
+export async function getUserApplications(cookie: string) {
   try {
-    const res = await fetch(`${url}/api/applications`, { cache: "no-store" });
-    const body: Application[] = await res.json();
-    const result = {
-      ok: res.ok,
-      status: res.status,
-      body,
-    };
-    return [result, null] as [typeof result, null];
+    const res = await fetch(`${url}/api/applications`, {
+      headers: {
+        "Content-Type": "application/json",
+        cookie,
+      },
+    });
+    const body = await res.json();
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        throw new Error("Unauthorized");
+      }
+
+      throw new Error("FailedToFetch");
+    }
+
+    return [body, null] as [Application[], null];
   } catch (error) {
     console.log({ error });
     return [null, error] as [null, Error];

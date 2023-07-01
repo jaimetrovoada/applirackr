@@ -4,9 +4,14 @@ import { ApplicationValidator } from "@/lib/validators/schemas";
 import { ApplicationRequest } from "@/@types";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: Request, res: NextResponse) {
+export async function GET(req: NextRequest) {
   try {
     const user = await getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const applications = await prisma.job.findMany({
       where: {
         user: {
