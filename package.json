@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "check-types": "tsc --noemit",
+    "lint": "next lint && npm run check-types"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.1.1",
@@ -33,6 +34,7 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
+    "eslint-config-prettier": "^8.8.0",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.3.0",
     "prisma": "^4.16.1"
