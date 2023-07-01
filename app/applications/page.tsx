@@ -6,15 +6,13 @@ export default async function Page() {
   const cookie = headers().get("cookie") ?? "";
   const [res, err] = await getUserApplications(cookie);
   console.log({ err });
+  if (err) {
+    throw err;
+  }
 
   return (
     <main className="container mx-auto flex flex-col gap-4 p-4 lg:px-0">
-      {res && <ApplicationsTable applications={res} />}{" "}
-      {err && err.message === "Unauthorized" ? (
-        <p>Unauthorized</p>
-      ) : (
-        <p>Failed to fetch data</p>
-      )}
+      <ApplicationsTable applications={res} />
     </main>
   );
 }
