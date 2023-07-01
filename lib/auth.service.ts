@@ -1,9 +1,10 @@
-import { NextAuthOptions, getServerSession } from "next-auth";
+import { NextAuthOptions } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "./db";
 import GitHubProvider from "next-auth/providers/github";
 
-export const nextAuthOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV !== "production",
   theme: {
     colorScheme: "auto", // "auto" | "dark" | "light"
@@ -15,12 +16,10 @@ export const nextAuthOptions: NextAuthOptions = {
     }),
   ],
   adapter: PrismaAdapter(prisma),
-
-  secret: process.env.SECRET,
 };
 
 export const getUser = async () => {
-  const session = await getServerSession(nextAuthOptions);
+  const session = await getServerSession(authOptions);
 
   return session?.user;
 };
