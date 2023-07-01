@@ -1,6 +1,6 @@
-import { nextAuthOptions } from "@/lib/auth.service";
+import { authOptions } from "@/lib/auth.service";
 import NextAuth from "next-auth";
 
-const handler = NextAuth(nextAuthOptions);
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
