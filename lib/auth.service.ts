@@ -16,6 +16,9 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   adapter: PrismaAdapter(prisma),
+  pages: {
+    signIn: "/login",
+  },
 };
 
 export const getUser = async () => {
