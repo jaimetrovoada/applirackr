@@ -5,20 +5,16 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
-  Column,
-  Table,
   ColumnDef,
-  getFilteredRowModel,
-  getPaginationRowModel,
   RowData,
   Row,
 } from "@tanstack/react-table";
-import Link from "next/link";
-import { useRef, useState, useEffect, useMemo } from "react";
+import { useRef, useState, useMemo } from "react";
 import Modal, { ModalHandler } from "./Modal";
 import JobForm from "./Job.form";
 import Button from "./Button";
 import { Edit, Trash } from "react-feather";
+import EditableCell from "./EditableCell";
 
 interface Props {
   applications: Application[] | null;
@@ -29,68 +25,23 @@ declare module "@tanstack/react-table" {
   }
 }
 
-const defaultColumn: Partial<ColumnDef<Application>> = {
-  cell: ({ getValue, row: { index }, column: { id }, table }) => {
-    const initialValue = getValue();
-    // We need to keep and update the state of the cell normally
-    const [value, setValue] = useState(initialValue);
-
-    // When the input is blurred, we'll call our table meta's updateData function
-    const onBlur = () => {
-      console.log(index, id, value);
-      table.options.meta?.updateData(index, id, value);
-    };
-
-    // If the initialValue is changed external, sync it up with our state
-    useEffect(() => {
-      setValue(initialValue);
-    }, [initialValue]);
-
-    if (id === "status") {
-      return (
-        <select
-          id="status"
-          value={initialValue as string}
-          onChange={(e) => setValue(e.target.value)}
-          onBlur={onBlur}
-          className="rounded-lg border border-transparent bg-transparent p-1 focus-within:rounded-b-none group-hover:border-gray-600/50"
-        >
-          <optgroup className="bg-zinc-900 text-white" label="Status">
-            <option value="SAVED">saved</option>
-            <option value="APPLIED">applied</option>
-            <option value="INTERVIEW">interview</option>
-            <option value="REJECTED">rejected</option>
-            <option value="OFFER">offer</option>
-          </optgroup>
-        </select>
-      );
-    }
-
-    if (id === "dateApplied") {
-      return (
-        <input
-          type="date"
-          value={new Date(initialValue as string).toISOString().slice(0, 10)}
-          onChange={(e) => setValue(e.target.value)}
-          onBlur={onBlur}
-          className="rounded-lg border border-transparent bg-transparent p-1 group-hover:border-gray-600/50"
-        />
-      );
-    }
-    return (
-      <input
-        value={value as string}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={onBlur}
-        className="rounded-lg border border-transparent bg-transparent p-1 group-hover:border-gray-600/50"
-      />
-    );
-  },
-};
-
 const ApplicationsTable = ({ applications }: Props) => {
   const columnHelper = createColumnHelper<Application>();
 
+  const defaultColumn: Partial<ColumnDef<Application>> = {
+    cell: ({ getValue, row: { index }, column: { id }, table }) => {
+      const initialValue = getValue();
+
+      return (
+        <EditableCell
+          index={index}
+          id={id}
+          value={initialValue as string}
+          updateMyData={table.options.meta?.updateData!}
+        />
+      );
+    },
+  };
   const columns = useMemo(
     () => [
       columnHelper.accessor("title", {
@@ -109,7 +60,7 @@ const ApplicationsTable = ({ applications }: Props) => {
         header: "Job Post URL",
       }),
     ],
-    []
+    [columnHelper]
   );
 
   const [data, setData] = useState(() => [...(applications || [])]);
