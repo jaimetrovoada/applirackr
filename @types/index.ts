@@ -13,15 +13,3 @@ export type Statistic = {
   count: number | undefined;
   pct: number | undefined;
 };
-
-
-declare module "@tanstack/react-table" {
-  interface TableMeta<TData extends RowData> {
-    updateData: (
-      rowIndex: number,
-      columnId: string,
-      value: unknown,
-      rowId: string
-    ) => void;
-  }
-}

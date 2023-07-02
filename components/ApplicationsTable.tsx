@@ -20,6 +20,17 @@ interface Props {
   applications: Application[] | null;
 }
 
+declare module "@tanstack/react-table" {
+  interface TableMeta<TData extends RowData> {
+    updateData: (
+      rowIndex: number,
+      columnId: string,
+      value: unknown,
+      rowId: string
+    ) => void;
+  }
+}
+
 const ApplicationsTable = ({ applications }: Props) => {
   const [disabled, setDisabled] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
