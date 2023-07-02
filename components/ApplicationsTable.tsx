@@ -1,35 +1,30 @@
 "use client";
 import { Application } from "@/@types";
 import {
-  createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
-  RowData,
   Row,
 } from "@tanstack/react-table";
-import { useRef, useState, useMemo } from "react";
+import { useRef, useState } from "react";
 import Modal, { ModalHandler } from "./Modal";
 import JobForm from "./Job.form";
 import Button from "./Button";
-import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
+import { AiOutlineDelete } from "react-icons/ai";
 import EditableCell from "./EditableCell";
 import { deleteApplication, updateApplication } from "@/lib/api.service";
+import { columnHelper, getRowValues } from "@/lib/table.helpers";
 
 interface Props {
   applications: Application[] | null;
 }
-declare module "@tanstack/react-table" {
-  interface TableMeta<TData extends RowData> {
-    updateData: (rowIndex: number, columnId: string, value: unknown) => void;
-  }
-}
 
 const ApplicationsTable = ({ applications }: Props) => {
-  const columnHelper = createColumnHelper<Application>();
+  const [disabled, setDisabled] = useState(false);
 
-  const handleEdit = async (rowId: string) => {
-    const rowData = getRowValues(table.getRow(rowId));
+  const handleEdit = async (row: Row<Application>) => {
+    setDisabled(true);
+    const rowData = getRowValues(row);
     console.log({ rowData });
     const id = rowData.find((col) => col.name === "id")?.value as string;
 
@@ -49,11 +44,19 @@ const ApplicationsTable = ({ applications }: Props) => {
     };
 
     const [res, err] = await updateApplication(id, payload);
-    console.log({ res, err });
+
+    if (res || err) {
+      setDisabled(false);
+    }
+
+    if (err) {
+      return false;
+    }
+    return true;
   };
 
-  const handleDelete = async (rowId: string, rowIndex: number) => {
-    const rowData = getRowValues(table.getRow(rowId));
+  const handleDelete = async (row: Row<Application>) => {
+    const rowData = getRowValues(row);
     console.log("delete", { rowData });
     const id = rowData.find((col) => col.name === "id")?.value as string;
 
@@ -62,7 +65,7 @@ const ApplicationsTable = ({ applications }: Props) => {
     const dataCopy = [...data];
 
     if (res && res.ok) {
-      dataCopy.splice(rowIndex, 1);
+      dataCopy.splice(row.index, 1);
       setData(dataCopy);
     }
     if (err) {
@@ -75,10 +78,12 @@ const ApplicationsTable = ({ applications }: Props) => {
       header: "Title",
       cell: (info) => (
         <EditableCell
-          index={info.row.index}
-          id={info.column.id}
+          rowIndex={info.row.index}
+          columnId={info.column.id}
+          rowId={info.row.id}
           value={info.getValue()}
           updateMyData={info.table.options.meta?.updateData!}
+          disabled={disabled}
         />
       ),
     }),
@@ -86,10 +91,12 @@ const ApplicationsTable = ({ applications }: Props) => {
       header: "Company",
       cell: (info) => (
         <EditableCell
-          index={info.row.index}
-          id={info.column.id}
+          rowIndex={info.row.index}
+          columnId={info.column.id}
+          rowId={info.row.id}
           value={info.getValue()}
           updateMyData={info.table.options.meta?.updateData!}
+          disabled={disabled}
         />
       ),
     }),
@@ -97,10 +104,12 @@ const ApplicationsTable = ({ applications }: Props) => {
       header: "Status",
       cell: (info) => (
         <EditableCell
-          index={info.row.index}
-          id={info.column.id}
+          rowIndex={info.row.index}
+          columnId={info.column.id}
+          rowId={info.row.id}
           value={info.getValue()}
           updateMyData={info.table.options.meta?.updateData!}
+          disabled={disabled}
         />
       ),
     }),
@@ -108,10 +117,12 @@ const ApplicationsTable = ({ applications }: Props) => {
       header: "Date Applied",
       cell: (info) => (
         <EditableCell
-          index={info.row.index}
-          id={info.column.id}
+          rowIndex={info.row.index}
+          columnId={info.column.id}
+          rowId={info.row.id}
           value={info.getValue().toString()}
           updateMyData={info.table.options.meta?.updateData!}
+          disabled={disabled}
         />
       ),
     }),
@@ -119,36 +130,30 @@ const ApplicationsTable = ({ applications }: Props) => {
       header: "Job Post URL",
       cell: (info) => (
         <EditableCell
-          index={info.row.index}
-          id={info.column.id}
+          rowIndex={info.row.index}
+          columnId={info.column.id}
+          rowId={info.row.id}
           value={info.getValue()}
           updateMyData={info.table.options.meta?.updateData!}
+          disabled={disabled}
         />
       ),
     }),
-    columnHelper.accessor("id", {}),
     columnHelper.accessor(() => "actions", {
       header: "Actions",
       cell: (info) => (
-        <div className="inline-flex w-full items-center justify-evenly">
-          <Button
-            onClick={() => handleEdit(info.row.id)}
-            variant="custom"
-            className="group-hover:text-blue-500"
-          >
-            <AiOutlineEdit size={24} />
-          </Button>
-          <Button
-            useResetStyles
-            variant="custom"
-            onClick={() => handleDelete(info.row.id, info.row.index)}
-            className="group-hover:text-red-500"
-          >
-            <AiOutlineDelete size={24} />
-          </Button>
-        </div>
+        <Button
+          useResetStyles
+          variant="custom"
+          onClick={() => handleDelete(info.row)}
+          className="mx-auto group-hover:text-red-500"
+          disabled={disabled}
+        >
+          <AiOutlineDelete size={24} />
+        </Button>
       ),
     }),
+    columnHelper.accessor("id", {}),
   ];
 
   const [data, setData] = useState(() => [...(applications || [])]);
@@ -158,7 +163,7 @@ const ApplicationsTable = ({ applications }: Props) => {
     getCoreRowModel: getCoreRowModel(),
     // Provide our updateData function to our table meta
     meta: {
-      updateData: (rowIndex, columnId, value) => {
+      updateData: async (rowIndex, columnId, value, rowId) => {
         // Skip page index reset until after next rerender
         setData((old) =>
           old.map((row, index) => {
@@ -171,6 +176,11 @@ const ApplicationsTable = ({ applications }: Props) => {
             return row;
           })
         );
+
+        const ok = await handleEdit(table.getRow(rowId));
+        if (!ok) {
+          setData(data);
+        }
       },
     },
     debugTable: true,
@@ -180,12 +190,6 @@ const ApplicationsTable = ({ applications }: Props) => {
       },
     },
   });
-
-  const getRowValues = (row: Row<Application>) => {
-    return row.getAllCells().map((cell) => {
-      return { name: cell.column.id, value: cell.getValue() };
-    });
-  };
 
   const modalRef = useRef<ModalHandler>(null);
 
@@ -218,9 +222,9 @@ const ApplicationsTable = ({ applications }: Props) => {
 
       <div className="w-full overflow-auto rounded-lg border border-gray-600/50">
         <table className="w-full">
-          <thead className="bg-zinc-950">
+          <thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
+              <tr key={headerGroup.id} className="bg-zinc-950">
                 {headerGroup.headers.map((header) => (
                   <th key={header.id} className="p-2 text-left">
                     {header.isPlaceholder
@@ -238,7 +242,7 @@ const ApplicationsTable = ({ applications }: Props) => {
             {table.getRowModel().rows.map((row) => (
               <tr key={row.id} className="group odd:bg-zinc-800/50">
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="flex-1 p-2">
+                  <td key={cell.id} className="p-2">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
