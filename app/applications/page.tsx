@@ -1,11 +1,12 @@
 import ApplicationsTable from "@/components/ApplicationsTable";
-import { getUserApplications } from "@/lib/api.service";
+import { getUserApplications, getStatistics } from "@/lib/api.service";
 import { headers } from "next/headers";
 
 export default async function Page() {
   const cookie = headers().get("cookie") ?? "";
   const [res, err] = await getUserApplications(cookie);
-  console.log({ err });
+  const [statistics, err2] = await getStatistics(cookie);
+
   if (err) {
     throw err;
   }
