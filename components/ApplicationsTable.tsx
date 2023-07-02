@@ -6,14 +6,15 @@ import {
   useReactTable,
   Row,
 } from "@tanstack/react-table";
-import { useRef, useState } from "react";
-import Modal, { ModalHandler } from "./Modal";
-import JobForm from "./Job.form";
+import { useState } from "react";
 import Button from "./Button";
 import { AiOutlineDelete } from "react-icons/ai";
 import EditableCell from "./EditableCell";
 import { deleteApplication, updateApplication } from "@/lib/api.service";
 import { columnHelper, getRowValues } from "@/lib/table.helpers";
+import NewRow from "./NewRow";
+import { createApplication } from "@/lib/api.service";
+import { ApplicationRequest } from "@/@types";
 
 interface Props {
   applications: Application[] | null;
@@ -21,6 +22,7 @@ interface Props {
 
 const ApplicationsTable = ({ applications }: Props) => {
   const [disabled, setDisabled] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   const handleEdit = async (row: Row<Application>) => {
     setDisabled(true);
@@ -120,7 +122,7 @@ const ApplicationsTable = ({ applications }: Props) => {
           rowIndex={info.row.index}
           columnId={info.column.id}
           rowId={info.row.id}
-          value={info.getValue().toString()}
+          value={info.getValue()?.toString()}
           updateMyData={info.table.options.meta?.updateData!}
           disabled={disabled}
         />
@@ -191,35 +193,22 @@ const ApplicationsTable = ({ applications }: Props) => {
     },
   });
 
-  const modalRef = useRef<ModalHandler>(null);
+  const hideNew = () => {
+    setIsVisible(false);
+  };
 
-  if (!data || data.length === 0) {
-    return (
-      <>
-        <Modal ref={modalRef}>
-          <JobForm />
-        </Modal>
-        <div className="flex h-1/3 w-full flex-col items-center justify-around overflow-auto rounded-lg border border-gray-600/50 p-4">
-          <p className="text-2xl font-semibold">
-            You haven&apos;t added any applications yet.
-          </p>
-          <Button onClick={() => modalRef.current?.show()} className="w-fit">
-            Add new application
-          </Button>
-        </div>
-      </>
-    );
-  }
+  const submitNew = async (data: ApplicationRequest) => {
+    console.log({ data });
+    const [res, err] = await createApplication(data);
+    console.log({ res, err });
+    if (res?.ok) {
+      hideNew();
+      setData((old) => [...old, res.body]);
+    }
+  };
 
   return (
     <>
-      <Modal ref={modalRef}>
-        <JobForm />
-      </Modal>
-      <Button onClick={() => modalRef.current?.show()} className="w-fit">
-        Add new application
-      </Button>
-
       <div className="w-full overflow-auto rounded-lg border border-gray-600/50">
         <table className="w-full">
           <thead>
@@ -237,8 +226,20 @@ const ApplicationsTable = ({ applications }: Props) => {
                 ))}
               </tr>
             ))}
+            <tr>
+              <td colSpan={100} className="">
+                <Button
+                  variant="custom"
+                  className="w-full rounded-none bg-zinc-950/50 p-2 font-semibold"
+                  onClick={() => setIsVisible(true)}
+                >
+                  Add new
+                </Button>
+              </td>
+            </tr>
           </thead>
           <tbody>
+            {isVisible && <NewRow hideNew={hideNew} submitNew={submitNew} />}
             {table.getRowModel().rows.map((row) => (
               <tr key={row.id} className="group odd:bg-zinc-800/50">
                 {row.getVisibleCells().map((cell) => (
