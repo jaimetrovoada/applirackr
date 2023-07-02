@@ -11,7 +11,7 @@ export default async function Page() {
   }
 
   return (
-    <main className="container mx-auto flex flex-col gap-4 p-4 lg:px-0">
+    <main className="container mx-auto flex flex-1 flex-col gap-4 p-4 lg:px-0">
       <ApplicationsTable applications={res} />
     </main>
   );
