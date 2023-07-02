@@ -34,7 +34,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const reqBod: ApplicationRequest = await req.json();
+    const reqBod = await req.json();
     const body = ApplicationValidator.parse(reqBod);
 
     const result = await prisma.job.create({

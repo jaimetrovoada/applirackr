@@ -1,8 +1,7 @@
-import { Column, Row } from "@tanstack/react-table";
 import { useState, useEffect } from "react";
 
 interface Props {
-  value: string;
+  value: string | undefined;
   rowIndex: number;
   columnId: string;
   rowId: string;
@@ -63,7 +62,11 @@ const EditableCell = ({
     return (
       <input
         type="date"
-        value={new Date(initialValue as string).toISOString().slice(0, 10)}
+        value={
+          initialValue
+            ? new Date(initialValue as string).toISOString().slice(0, 10)
+            : undefined
+        }
         onChange={(e) => setValue(e.target.value)}
         onBlur={onBlur}
         onKeyUp={(e) => e.key === "Enter" && onBlur()}
