@@ -5,6 +5,7 @@ import {
   getCoreRowModel,
   useReactTable,
   Row,
+  RowData,
 } from "@tanstack/react-table";
 import { useState } from "react";
 import Button from "./Button";
