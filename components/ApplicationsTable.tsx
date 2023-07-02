@@ -5,7 +5,6 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
-  ColumnDef,
   RowData,
   Row,
 } from "@tanstack/react-table";
@@ -13,9 +12,9 @@ import { useRef, useState, useMemo } from "react";
 import Modal, { ModalHandler } from "./Modal";
 import JobForm from "./Job.form";
 import Button from "./Button";
-import { Edit, Trash } from "react-feather";
+import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
 import EditableCell from "./EditableCell";
-import { updateApplication } from "@/lib/api.service";
+import { deleteApplication, updateApplication } from "@/lib/api.service";
 
 interface Props {
   applications: Application[] | null;
@@ -26,51 +25,136 @@ declare module "@tanstack/react-table" {
   }
 }
 
-const defaultColumn: Partial<ColumnDef<Application>> = {
-  cell: ({ getValue, row: { index }, column: { id }, table }) => {
-    const initialValue = getValue();
-
-    return (
-      <EditableCell
-        index={index}
-        id={id}
-        value={initialValue as string}
-        updateMyData={table.options.meta?.updateData!}
-      />
-    );
-  },
-};
-
 const ApplicationsTable = ({ applications }: Props) => {
   const columnHelper = createColumnHelper<Application>();
 
-  const columns = useMemo(
-    () => [
-      columnHelper.accessor("title", {
-        header: "Title",
-      }),
-      columnHelper.accessor("company", {
-        header: "Company",
-      }),
-      columnHelper.accessor("status", {
-        header: "Status",
-      }),
-      columnHelper.accessor("dateApplied", {
-        header: "Date Applied",
-      }),
-      columnHelper.accessor("postingUrl", {
-        header: "Job Post URL",
-      }),
-      columnHelper.accessor("id", {}),
-    ],
-    [columnHelper]
-  );
+  const handleEdit = async (rowId: string) => {
+    const rowData = getRowValues(table.getRow(rowId));
+    console.log({ rowData });
+    const id = rowData.find((col) => col.name === "id")?.value as string;
+
+    const payload = {
+      title: rowData.find((col) => col.name === "title")?.value as string,
+      company: rowData.find((col) => col.name === "company")?.value as string,
+      status: rowData.find((col) => col.name === "status")?.value as
+        | "APPLIED"
+        | "INTERVIEW"
+        | "OFFER"
+        | "REJECTED"
+        | "SAVED",
+      dateApplied: rowData.find((col) => col.name === "dateApplied")
+        ?.value as Date,
+      postingUrl: rowData.find((col) => col.name === "postingUrl")
+        ?.value as string,
+    };
+
+    const [res, err] = await updateApplication(id, payload);
+    console.log({ res, err });
+  };
+
+  const handleDelete = async (rowId: string, rowIndex: number) => {
+    const rowData = getRowValues(table.getRow(rowId));
+    console.log("delete", { rowData });
+    const id = rowData.find((col) => col.name === "id")?.value as string;
+
+    const [res, err] = await deleteApplication(id);
+    console.log({ res });
+    const dataCopy = [...data];
+
+    if (res && res.ok) {
+      dataCopy.splice(rowIndex, 1);
+      setData(dataCopy);
+    }
+    if (err) {
+      console.log({ err });
+    }
+  };
+
+  const columns = [
+    columnHelper.accessor("title", {
+      header: "Title",
+      cell: (info) => (
+        <EditableCell
+          index={info.row.index}
+          id={info.column.id}
+          value={info.getValue()}
+          updateMyData={info.table.options.meta?.updateData!}
+        />
+      ),
+    }),
+    columnHelper.accessor("company", {
+      header: "Company",
+      cell: (info) => (
+        <EditableCell
+          index={info.row.index}
+          id={info.column.id}
+          value={info.getValue()}
+          updateMyData={info.table.options.meta?.updateData!}
+        />
+      ),
+    }),
+    columnHelper.accessor("status", {
+      header: "Status",
+      cell: (info) => (
+        <EditableCell
+          index={info.row.index}
+          id={info.column.id}
+          value={info.getValue()}
+          updateMyData={info.table.options.meta?.updateData!}
+        />
+      ),
+    }),
+    columnHelper.accessor("dateApplied", {
+      header: "Date Applied",
+      cell: (info) => (
+        <EditableCell
+          index={info.row.index}
+          id={info.column.id}
+          value={info.getValue().toString()}
+          updateMyData={info.table.options.meta?.updateData!}
+        />
+      ),
+    }),
+    columnHelper.accessor("postingUrl", {
+      header: "Job Post URL",
+      cell: (info) => (
+        <EditableCell
+          index={info.row.index}
+          id={info.column.id}
+          value={info.getValue()}
+          updateMyData={info.table.options.meta?.updateData!}
+        />
+      ),
+    }),
+    columnHelper.accessor("id", {}),
+    columnHelper.accessor(() => "actions", {
+      header: "Actions",
+      cell: (info) => (
+        <div className="inline-flex w-full items-center justify-evenly">
+          <Button
+            onClick={() => handleEdit(info.row.id)}
+            variant="custom"
+            className="group-hover:text-blue-500"
+          >
+            <AiOutlineEdit size={24} />
+          </Button>
+          <Button
+            useResetStyles
+            variant="custom"
+            onClick={() => handleDelete(info.row.id, info.row.index)}
+            className="group-hover:text-red-500"
+          >
+            <AiOutlineDelete size={24} />
+          </Button>
+        </div>
+      ),
+    }),
+  ];
 
   const [data, setData] = useState(() => [...(applications || [])]);
   const table = useReactTable({
     data,
     columns,
-    defaultColumn,
     getCoreRowModel: getCoreRowModel(),
     // Provide our updateData function to our table meta
     meta: {
@@ -105,29 +189,23 @@ const ApplicationsTable = ({ applications }: Props) => {
 
   const modalRef = useRef<ModalHandler>(null);
 
-  const handleEdit = async (rowId: string) => {
-    const rowData = getRowValues(table.getRow(rowId));
-    console.log({ rowData });
-    const id = rowData.find((col) => col.name === "id")?.value as string;
-
-    const payload = {
-      title: rowData.find((col) => col.name === "title")?.value as string,
-      company: rowData.find((col) => col.name === "company")?.value as string,
-      status: rowData.find((col) => col.name === "status")?.value as
-        | "APPLIED"
-        | "INTERVIEW"
-        | "OFFER"
-        | "REJECTED"
-        | "SAVED",
-      dateApplied: rowData.find((col) => col.name === "dateApplied")
-        ?.value as Date,
-      postingUrl: rowData.find((col) => col.name === "postingUrl")
-        ?.value as string,
-    };
-
-    const [res, err] = await updateApplication(id, payload);
-    console.log({res, err})
-  };
+  if (!data || data.length === 0) {
+    return (
+      <>
+        <Modal ref={modalRef}>
+          <JobForm />
+        </Modal>
+        <div className="flex h-1/3 w-full flex-col items-center justify-around overflow-auto rounded-lg border border-gray-600/50 p-4">
+          <p className="text-2xl font-semibold">
+            You haven&apos;t added any applications yet.
+          </p>
+          <Button onClick={() => modalRef.current?.show()} className="w-fit">
+            Add new application
+          </Button>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -153,7 +231,6 @@ const ApplicationsTable = ({ applications }: Props) => {
                         )}
                   </th>
                 ))}
-                <th className="p-2 text-left">Actions</th>
               </tr>
             ))}
           </thead>
@@ -165,14 +242,6 @@ const ApplicationsTable = ({ applications }: Props) => {
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
-                <td className="">
-                  <Button useResetStyles variant="custom">
-                    <Trash />
-                  </Button>
-                  <Button onClick={() => handleEdit(row.id)} variant="custom">
-                    <Edit />
-                  </Button>
-                </td>
               </tr>
             ))}
           </tbody>
