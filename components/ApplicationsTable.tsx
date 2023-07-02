@@ -15,6 +15,7 @@ import JobForm from "./Job.form";
 import Button from "./Button";
 import { Edit, Trash } from "react-feather";
 import EditableCell from "./EditableCell";
+import { updateApplication } from "@/lib/api.service";
 
 interface Props {
   applications: Application[] | null;
@@ -25,23 +26,24 @@ declare module "@tanstack/react-table" {
   }
 }
 
+const defaultColumn: Partial<ColumnDef<Application>> = {
+  cell: ({ getValue, row: { index }, column: { id }, table }) => {
+    const initialValue = getValue();
+
+    return (
+      <EditableCell
+        index={index}
+        id={id}
+        value={initialValue as string}
+        updateMyData={table.options.meta?.updateData!}
+      />
+    );
+  },
+};
+
 const ApplicationsTable = ({ applications }: Props) => {
   const columnHelper = createColumnHelper<Application>();
 
-  const defaultColumn: Partial<ColumnDef<Application>> = {
-    cell: ({ getValue, row: { index }, column: { id }, table }) => {
-      const initialValue = getValue();
-
-      return (
-        <EditableCell
-          index={index}
-          id={id}
-          value={initialValue as string}
-          updateMyData={table.options.meta?.updateData!}
-        />
-      );
-    },
-  };
   const columns = useMemo(
     () => [
       columnHelper.accessor("title", {
@@ -59,6 +61,7 @@ const ApplicationsTable = ({ applications }: Props) => {
       columnHelper.accessor("postingUrl", {
         header: "Job Post URL",
       }),
+      columnHelper.accessor("id", {}),
     ],
     [columnHelper]
   );
@@ -87,7 +90,13 @@ const ApplicationsTable = ({ applications }: Props) => {
       },
     },
     debugTable: true,
+    state: {
+      columnVisibility: {
+        id: false,
+      },
+    },
   });
+
   const getRowValues = (row: Row<Application>) => {
     return row.getAllCells().map((cell) => {
       return { name: cell.column.id, value: cell.getValue() };
@@ -96,9 +105,28 @@ const ApplicationsTable = ({ applications }: Props) => {
 
   const modalRef = useRef<ModalHandler>(null);
 
-  const handleEdit = (rowId: string) => {
+  const handleEdit = async (rowId: string) => {
     const rowData = getRowValues(table.getRow(rowId));
     console.log({ rowData });
+    const id = rowData.find((col) => col.name === "id")?.value as string;
+
+    const payload = {
+      title: rowData.find((col) => col.name === "title")?.value as string,
+      company: rowData.find((col) => col.name === "company")?.value as string,
+      status: rowData.find((col) => col.name === "status")?.value as
+        | "APPLIED"
+        | "INTERVIEW"
+        | "OFFER"
+        | "REJECTED"
+        | "SAVED",
+      dateApplied: rowData.find((col) => col.name === "dateApplied")
+        ?.value as Date,
+      postingUrl: rowData.find((col) => col.name === "postingUrl")
+        ?.value as string,
+    };
+
+    const [res, err] = await updateApplication(id, payload);
+    console.log({res, err})
   };
 
   return (

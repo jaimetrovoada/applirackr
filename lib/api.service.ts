@@ -47,3 +47,30 @@ export async function getUserApplications(cookie: string) {
     return [null, error] as [null, Error];
   }
 }
+
+export async function updateApplication(
+  id: string,
+  payload: ApplicationRequest
+) {
+  try {
+    const res = await fetch(`${url}/api/applications/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    const body = await res.json();
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        throw new Error("Unauthorized");
+      }
+      throw new Error("RequestFailed");
+    }
+    return [body, null] as [Application, null];
+  } catch (error) {
+    console.log({ error });
+    return [null, error] as [null, Error];
+  }
+}
