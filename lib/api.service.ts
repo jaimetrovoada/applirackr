@@ -74,3 +74,25 @@ export async function updateApplication(
     return [null, error] as [null, Error];
   }
 }
+
+export async function deleteApplication(id: string) {
+  try {
+    const res = await fetch(`${url}/api/applications/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        throw new Error("Unauthorized");
+      }
+      throw new Error("RequestFailed");
+    }
+    return [res, null] as [Response, null];
+  } catch (error) {
+    console.log({ error });
+    return [null, error] as [null, Error];
+  }
+}
