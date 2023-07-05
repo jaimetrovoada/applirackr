@@ -6,10 +6,16 @@ import {
   useReactTable,
   Row,
   RowData,
+  SortingState,
+  getSortedRowModel,
 } from "@tanstack/react-table";
 import { useState } from "react";
 import Button from "./Button";
-import { AiOutlineDelete } from "react-icons/ai";
+import {
+  AiOutlineArrowDown,
+  AiOutlineArrowUp,
+  AiOutlineDelete,
+} from "react-icons/ai";
 import EditableCell from "./EditableCell";
 import { deleteApplication, updateApplication } from "@/lib/api.service";
 import { columnHelper, getRowValues } from "@/lib/table.helpers";
@@ -35,6 +41,8 @@ declare module "@tanstack/react-table" {
 const ApplicationsTable = ({ applications }: Props) => {
   const [disabled, setDisabled] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const handleEdit = async (row: Row<Application>) => {
     setDisabled(true);
@@ -155,6 +163,7 @@ const ApplicationsTable = ({ applications }: Props) => {
     }),
     columnHelper.accessor(() => "actions", {
       header: "Actions",
+      enableSorting: false,
       cell: (info) => (
         <Button
           useResetStyles
@@ -175,6 +184,7 @@ const ApplicationsTable = ({ applications }: Props) => {
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     // Provide our updateData function to our table meta
     meta: {
       updateData: async (rowIndex, columnId, value, rowId) => {
@@ -199,10 +209,12 @@ const ApplicationsTable = ({ applications }: Props) => {
     },
     debugTable: true,
     state: {
+      sorting,
       columnVisibility: {
         id: false,
       },
     },
+    onSortingChange: setSorting,
   });
 
   const hideNew = () => {
@@ -227,13 +239,30 @@ const ApplicationsTable = ({ applications }: Props) => {
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="bg-zinc-950">
                 {headerGroup.headers.map((header) => (
-                  <th key={header.id} className="p-2 text-left">
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
+                  <th
+                    key={header.id}
+                    colSpan={header.colSpan}
+                    className="p-2 text-left"
+                  >
+                    {header.isPlaceholder ? null : (
+                      <div
+                        {...{
+                          className: header.column.getCanSort()
+                            ? "cursor-pointer select-none inline-flex items-center gap-4"
+                            : "",
+                          onClick: header.column.getToggleSortingHandler(),
+                        }}
+                      >
+                        {flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
+                        {{
+                          asc: <AiOutlineArrowUp />,
+                          desc: <AiOutlineArrowDown />,
+                        }[header.column.getIsSorted() as string] ?? null}
+                      </div>
+                    )}
                   </th>
                 ))}
               </tr>
