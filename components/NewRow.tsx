@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import Button from "./Button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApplicationValidator } from "@/lib/validators/schemas";
+import { AiOutlineClose, AiOutlineCheck } from "react-icons/ai";
 
 type Inputs = ApplicationRequest;
 
@@ -72,15 +73,23 @@ const NewRow = ({ hideNew, submitNew }: Props) => {
           className="rounded-lg border border-transparent bg-transparent p-1 group-hover:border-gray-600/50"
         />
       </td>
-      <td>
+      <td className="grid grid-cols-2 justify-between p-2">
         <Button
           onClick={() =>
             submitNew({ ...watch(), dateApplied: watch("dateApplied") || null })
           }
+          variant="custom"
+          className="hover:text-green-500"
         >
-          Save
+          <AiOutlineCheck size={24} />
         </Button>
-        <Button onClick={hideNew}>Hide</Button>
+        <Button
+          onClick={hideNew}
+          variant="custom"
+          className="hover:text-red-500"
+        >
+          <AiOutlineClose size={24} />
+        </Button>
       </td>
     </tr>
   );
