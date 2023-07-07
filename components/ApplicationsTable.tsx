@@ -223,9 +223,9 @@ const ApplicationsTable = ({ applications }: Props) => {
     console.log({ data });
     const [res, err] = await createApplication(data);
     console.log({ res, err });
-    if (res?.ok) {
+    if (!err) {
       hideNew();
-      setData((old) => [...old, res.body]);
+      setData((old) => [...old, res]);
     }
   };
 

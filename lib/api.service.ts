@@ -1,4 +1,9 @@
-import { Application, ApplicationRequest, Statistic } from "@/@types";
+import {
+  ApiResponse,
+  Application,
+  ApplicationRequest,
+  Statistic,
+} from "@/@types";
 
 const url = process.env.NEXT_PUBLIC_APP_URL;
 export async function createApplication(payload: ApplicationRequest) {
@@ -11,12 +16,17 @@ export async function createApplication(payload: ApplicationRequest) {
       body: JSON.stringify(payload),
     });
 
-    const result = {
-      ok: res.ok,
-      status: res.status,
-      body: await res.json(),
-    };
-    return [result, null] as [typeof result, null];
+    const body = await res.json();
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        throw new Error("Unauthorized");
+      }
+
+      throw new Error("RequestFailed");
+    }
+
+    return [body, null] as [Application, null];
   } catch (error) {
     console.log({ error });
     return [null, error] as [null, Error];
