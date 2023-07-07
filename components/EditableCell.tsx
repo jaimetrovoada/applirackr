@@ -44,10 +44,10 @@ const EditableCell = ({
         onChange={(e) => setValue(e.target.value)}
         onBlur={onBlur}
         onKeyUp={(e) => e.key === "Enter" && onBlur()}
-        className="rounded-lg border border-transparent bg-transparent p-1 focus-within:rounded-b-none group-hover:border-gray-600/50"
+        className="rounded-lg border border-transparent bg-transparent p-1 uppercase focus-within:rounded-b-none group-hover:border-gray-600/50"
         disabled={disabled}
       >
-        <optgroup className="bg-zinc-900 text-white" label="Status">
+        <optgroup className="bg-zinc-900 uppercase text-white" label="Status">
           <option value="SAVED">saved</option>
           <option value="APPLIED">applied</option>
           <option value="INTERVIEW">interview</option>
