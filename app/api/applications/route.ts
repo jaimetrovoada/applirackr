@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const applications = await prisma.job.findMany({
+    const applications = await prisma.application.findMany({
       where: {
         user: {
           email: user?.email,
@@ -37,12 +37,12 @@ export async function POST(req: NextRequest, res: NextResponse) {
     const reqBod = await req.json();
     const body = ApplicationValidator.parse(reqBod);
 
-    const result = await prisma.job.create({
+    const result = await prisma.application.create({
       data: {
         user: { connect: { email: user?.email! } },
         company: body.company,
-        title: body.title,
-        status: body.status,
+        position: body.position,
+        stage: body.stage,
         postingUrl: body.postingUrl,
         dateApplied: body.dateApplied,
       },

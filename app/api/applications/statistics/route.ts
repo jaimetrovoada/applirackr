@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const applications = await prisma.job.findMany({
+    const applications = await prisma.application.findMany({
       where: {
         user: {
           email: user?.email,
@@ -19,15 +19,15 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    let statusFrequency = new Map<Application["status"], number>();
+    let statusFrequency = new Map<Application["stage"], number>();
     applications.forEach((application) => {
-      if (statusFrequency.has(application.status)) {
+      if (statusFrequency.has(application.stage)) {
         statusFrequency.set(
-          application.status,
-          statusFrequency.get(application.status)! + 1
+          application.stage,
+          statusFrequency.get(application.stage)! + 1
         );
       } else {
-        statusFrequency.set(application.status, 1);
+        statusFrequency.set(application.stage, 1);
       }
     });
 

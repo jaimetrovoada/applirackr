@@ -1,5 +1,5 @@
 "use client";
-import { Application } from "@/@types";
+import { Application, Stages } from "@/@types";
 import {
   flexRender,
   getCoreRowModel,
@@ -22,6 +22,8 @@ import { columnHelper, getRowValues } from "@/lib/table.helpers";
 import NewRow from "./NewRow";
 import { createApplication } from "@/lib/api.service";
 import { ApplicationRequest } from "@/@types";
+import { ApplicationValidator, STAGES } from "@/lib/validators/schemas";
+import { z } from "zod";
 
 interface Props {
   applications: Application[] | null;
@@ -51,19 +53,15 @@ const ApplicationsTable = ({ applications }: Props) => {
     const id = rowData.find((col) => col.name === "id")?.value as string;
 
     const payload = {
-      title: rowData.find((col) => col.name === "title")?.value as string,
+      position: rowData.find((col) => col.name === "position")?.value as string,
       company: rowData.find((col) => col.name === "company")?.value as string,
-      status: rowData.find((col) => col.name === "status")?.value as
-        | "APPLIED"
-        | "INTERVIEW"
-        | "OFFER"
-        | "REJECTED"
-        | "SAVED",
+      stage: rowData.find((col) => col.name === "stage")?.value as Stages,
       dateApplied: rowData.find((col) => col.name === "dateApplied")
         ?.value as Date,
       postingUrl: rowData.find((col) => col.name === "postingUrl")
         ?.value as string,
     };
+    console.log({ payload });
 
     const [res, err] = await updateApplication(id, payload);
 
@@ -96,8 +94,8 @@ const ApplicationsTable = ({ applications }: Props) => {
   };
 
   const columns = [
-    columnHelper.accessor("title", {
-      header: "Title",
+    columnHelper.accessor("position", {
+      header: "Position",
       cell: (info) => (
         <EditableCell
           rowIndex={info.row.index}
@@ -122,8 +120,8 @@ const ApplicationsTable = ({ applications }: Props) => {
         />
       ),
     }),
-    columnHelper.accessor("status", {
-      header: "Status",
+    columnHelper.accessor("stage", {
+      header: "Stage",
       cell: (info) => (
         <EditableCell
           rowIndex={info.row.index}

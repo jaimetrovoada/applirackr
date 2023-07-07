@@ -1,3 +1,4 @@
+import { STAGES } from "@/lib/validators/schemas";
 import { useState, useEffect } from "react";
 
 interface Props {
@@ -27,7 +28,7 @@ const EditableCell = ({
 
   // When the input is blurred, we'll call our table meta's updateData function
   const onBlur = () => {
-    console.log(rowIndex, columnId, value, rowId);
+    console.log({ rowIndex, columnId, value, rowId });
     updateMyData(rowIndex, columnId, value, rowId);
   };
 
@@ -36,10 +37,10 @@ const EditableCell = ({
     setValue(initialValue);
   }, [initialValue]);
 
-  if (columnId === "status") {
+  if (columnId === "stage") {
     return (
       <select
-        id="status"
+        id="stage"
         value={initialValue as string}
         onChange={(e) => setValue(e.target.value)}
         onBlur={onBlur}
@@ -47,12 +48,12 @@ const EditableCell = ({
         className="rounded-lg border border-transparent bg-transparent p-1 uppercase focus-within:rounded-b-none group-hover:border-gray-600/50"
         disabled={disabled}
       >
-        <optgroup className="bg-zinc-900 uppercase text-white" label="Status">
-          <option value="SAVED">saved</option>
-          <option value="APPLIED">applied</option>
-          <option value="INTERVIEW">interview</option>
-          <option value="REJECTED">rejected</option>
-          <option value="OFFER">offer</option>
+        <optgroup className="bg-zinc-900 uppercase text-white" label="Stage">
+          {STAGES.map((stage) => (
+            <option key={stage} value={stage}>
+              {stage}
+            </option>
+          ))}
         </optgroup>
       </select>
     );

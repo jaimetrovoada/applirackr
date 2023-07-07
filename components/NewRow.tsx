@@ -2,7 +2,7 @@ import { ApplicationRequest } from "@/@types";
 import { useForm } from "react-hook-form";
 import Button from "./Button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ApplicationValidator } from "@/lib/validators/schemas";
+import { ApplicationValidator, STAGES } from "@/lib/validators/schemas";
 import { AiOutlineClose, AiOutlineCheck } from "react-icons/ai";
 
 type Inputs = ApplicationRequest;
@@ -15,7 +15,7 @@ interface Props {
 const NewRow = ({ hideNew, submitNew }: Props) => {
   const { watch, register } = useForm<Inputs>({
     defaultValues: {
-      status: "SAVED",
+      stage: "SAVED",
     },
     resolver: zodResolver(
       ApplicationValidator.required({
@@ -34,7 +34,7 @@ const NewRow = ({ hideNew, submitNew }: Props) => {
           Title
         </span>
         <input
-          {...register("title")}
+          {...register("position")}
           placeholder="Job Title"
           className="rounded-lg border border-transparent bg-transparent p-1 group-hover:border-gray-600/50"
         />
@@ -55,15 +55,15 @@ const NewRow = ({ hideNew, submitNew }: Props) => {
         </span>
         <select
           id="status"
-          {...register("status")}
+          {...register("stage")}
           className="rounded-lg border border-transparent bg-transparent p-1 focus-within:rounded-b-none group-hover:border-gray-600/50"
         >
           <optgroup className="bg-zinc-900 text-white" label="Status">
-            <option value="SAVED">saved</option>
-            <option value="APPLIED">applied</option>
-            <option value="INTERVIEW">interview</option>
-            <option value="REJECTED">rejected</option>
-            <option value="OFFER">offer</option>
+            {STAGES.map((stage) => (
+              <option key={stage} value={stage}>
+                {stage}
+              </option>
+            ))}
           </optgroup>
         </select>
       </td>

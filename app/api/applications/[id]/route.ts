@@ -19,7 +19,7 @@ export async function PUT(req: NextRequest, context: { params: Params }) {
 
     const body = ApplicationValidator.parse(await req.json());
 
-    const result = await prisma.job.update({
+    const result = await prisma.application.update({
       where: {
         id,
       },
@@ -43,7 +43,7 @@ export async function DELETE(req: NextRequest, context: { params: Params }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await prisma.job.delete({
+    await prisma.application.delete({
       where: {
         id,
       },

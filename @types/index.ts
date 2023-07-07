@@ -9,7 +9,9 @@ export type Application = ApplicationRequest & {
 };
 
 export type Statistic = {
-  status: Application["status"];
+  status: Application["stage"];
   count: number | undefined;
   pct: number | undefined;
 };
+
+export type Stages = z.infer<typeof ApplicationValidator>["stage"];
