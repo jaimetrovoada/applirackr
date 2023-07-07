@@ -28,22 +28,31 @@ const NewRow = ({ hideNew, submitNew }: Props) => {
   });
 
   return (
-    <tr className="group odd:bg-zinc-800/50">
-      <td className="p-2">
+    <tr className="group flex flex-col odd:bg-zinc-800/50 md:table-row">
+      <td className="flex flex-col p-2 md:table-cell">
+        <span className="px-1 text-sm font-semibold text-slate-400 md:hidden">
+          Title
+        </span>
         <input
           {...register("title")}
           placeholder="Job Title"
           className="rounded-lg border border-transparent bg-transparent p-1 group-hover:border-gray-600/50"
         />
       </td>
-      <td className="p-2">
+      <td className="flex flex-col p-2 md:table-cell">
+        <span className="px-1 text-sm font-semibold text-slate-400 md:hidden">
+          Company
+        </span>
         <input
           {...register("company")}
           placeholder="Company Name"
           className="rounded-lg border border-transparent bg-transparent p-1 group-hover:border-gray-600/50"
         />
       </td>
-      <td className="p-2">
+      <td className="flex flex-col p-2 md:table-cell">
+        <span className="px-1 text-sm font-semibold text-slate-400 md:hidden">
+          Status
+        </span>
         <select
           id="status"
           {...register("status")}
@@ -58,14 +67,20 @@ const NewRow = ({ hideNew, submitNew }: Props) => {
           </optgroup>
         </select>
       </td>
-      <td className="p-2">
+      <td className="flex flex-col p-2 md:table-cell">
+        <span className="px-1 text-sm font-semibold text-slate-400 md:hidden">
+          Date Applied
+        </span>
         <input
           type="date"
           {...register("dateApplied")}
           className="rounded-lg border border-transparent bg-transparent p-1 group-hover:border-gray-600/50"
         />
       </td>
-      <td className="p-2">
+      <td className="flex flex-col p-2 md:table-cell">
+        <span className="px-1 text-sm font-semibold text-slate-400 md:hidden">
+          Posting URL
+        </span>
         <input
           type="url"
           {...register("postingUrl")}
@@ -73,7 +88,7 @@ const NewRow = ({ hideNew, submitNew }: Props) => {
           className="rounded-lg border border-transparent bg-transparent p-1 group-hover:border-gray-600/50"
         />
       </td>
-      <td className="grid grid-cols-2 justify-between p-2">
+      <td className="flex flex-row justify-evenly p-2 md:grid md:grid-cols-2">
         <Button
           onClick={() =>
             submitNew({ ...watch(), dateApplied: watch("dateApplied") || null })

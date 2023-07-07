@@ -169,7 +169,7 @@ const ApplicationsTable = ({ applications }: Props) => {
           useResetStyles
           variant="custom"
           onClick={() => handleDelete(info.row)}
-          className="mx-auto group-hover:text-red-500"
+          className="group-hover:text-red-500 md:mx-auto"
           disabled={disabled}
         >
           <AiOutlineDelete size={24} />
@@ -233,9 +233,12 @@ const ApplicationsTable = ({ applications }: Props) => {
 
   return (
     <>
+      <Button className="w-fit" onClick={() => setIsVisible(true)}>
+        Add new
+      </Button>
       <div className="w-full overflow-auto rounded-lg border border-gray-600/50">
         <table className="w-full">
-          <thead>
+          <thead className="hidden md:table-header-group">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="bg-zinc-950">
                 {headerGroup.headers.map((header) => (
@@ -267,24 +270,19 @@ const ApplicationsTable = ({ applications }: Props) => {
                 ))}
               </tr>
             ))}
-            <tr>
-              <td colSpan={100} className="">
-                <Button
-                  variant="custom"
-                  className="w-full rounded-none bg-zinc-950/50 p-2 font-semibold"
-                  onClick={() => setIsVisible(true)}
-                >
-                  Add new
-                </Button>
-              </td>
-            </tr>
           </thead>
           <tbody>
             {isVisible && <NewRow hideNew={hideNew} submitNew={submitNew} />}
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="group odd:bg-zinc-800/50">
+              <tr
+                key={row.id}
+                className="group flex flex-col odd:bg-zinc-800/50 md:table-row"
+              >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="p-2">
+                  <td key={cell.id} className="flex flex-col p-2 md:table-cell">
+                    <span className="px-1 text-sm font-semibold text-slate-400 md:hidden">
+                      {cell.column.columnDef.header?.toString()}:
+                    </span>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
