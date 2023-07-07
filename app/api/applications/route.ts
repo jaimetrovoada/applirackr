@@ -1,15 +1,15 @@
 import { getUser } from "@/lib/auth.service";
 import { prisma } from "@/lib/db";
 import { ApplicationValidator } from "@/lib/validators/schemas";
-import { ApplicationRequest } from "@/@types";
 import { NextRequest, NextResponse } from "next/server";
+import { UnauthorizedError } from "@/lib/errors";
 
 export async function GET(req: NextRequest) {
   try {
     const user = await getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new UnauthorizedError();
     }
 
     const applications = await prisma.application.findMany({
@@ -22,7 +22,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(applications);
   } catch (error) {
     console.log({ error });
-    return NextResponse.json({ error: error }, { status: 500 });
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json({ error }, { status: error.statusCode });
+    }
+    return NextResponse.json({ error }, { status: 500 });
   }
 }
 
@@ -31,7 +34,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
     const user = await getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new UnauthorizedError();
     }
 
     const reqBod = await req.json();
@@ -50,6 +53,9 @@ export async function POST(req: NextRequest, res: NextResponse) {
     return NextResponse.json(result);
   } catch (error) {
     console.log({ error });
-    return NextResponse.json({ error: error }, { status: 500 });
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json({ error }, { status: error.statusCode });
+    }
+    return NextResponse.json({ error }, { status: 500 });
   }
 }

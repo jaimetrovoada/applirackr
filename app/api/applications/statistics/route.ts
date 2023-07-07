@@ -2,13 +2,14 @@ import { getUser } from "@/lib/auth.service";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { Application, Statistic } from "@/@types";
+import { UnauthorizedError } from "@/lib/errors";
 
 export async function GET(req: NextRequest) {
   try {
     const user = await getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new UnauthorizedError();
     }
 
     const applications = await prisma.application.findMany({
@@ -44,6 +45,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(statusFrequencyArray);
   } catch (error) {
     console.log({ error });
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json({ error }, { status: error.statusCode });
+    }
     return NextResponse.json({ error }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { ApplicationValidator } from "@/lib/validators/schemas";
 import { NextRequest, NextResponse } from "next/server";
 import { getUser } from "@/lib/auth.service";
+import { UnauthorizedError } from "@/lib/errors";
 
 interface Params {
   id: string;
@@ -14,7 +15,7 @@ export async function PUT(req: NextRequest, context: { params: Params }) {
     const user = await getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new UnauthorizedError();
     }
 
     const body = ApplicationValidator.parse(await req.json());
@@ -30,6 +31,9 @@ export async function PUT(req: NextRequest, context: { params: Params }) {
     return NextResponse.json(result);
   } catch (error) {
     console.log({ error });
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json({ error }, { status: error.statusCode });
+    }
     return NextResponse.json({ error: error }, { status: 500 });
   }
 }
@@ -40,7 +44,7 @@ export async function DELETE(req: NextRequest, context: { params: Params }) {
     const user = await getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new UnauthorizedError();
     }
 
     await prisma.application.delete({
@@ -52,6 +56,9 @@ export async function DELETE(req: NextRequest, context: { params: Params }) {
     return NextResponse.json({ status: 200 });
   } catch (error) {
     console.log({ error });
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json({ error }, { status: error.statusCode });
+    }
     return NextResponse.json({ error: error }, { status: 500 });
   }
 }
