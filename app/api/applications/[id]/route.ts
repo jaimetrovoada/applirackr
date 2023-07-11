@@ -18,7 +18,7 @@ export async function PUT(req: NextRequest, context: { params: Params }) {
       throw new UnauthorizedError();
     }
 
-    const body = ApplicationValidator.parse(await req.json());
+    const body = ApplicationValidator.partial().parse(await req.json());
 
     const result = await prisma.application.update({
       where: {

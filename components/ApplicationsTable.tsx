@@ -4,7 +4,6 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
-  Row,
   RowData,
   SortingState,
   getSortedRowModel,
@@ -18,12 +17,11 @@ import {
 } from "react-icons/ai";
 import EditableCell from "./EditableCell";
 import { deleteApplication, updateApplication } from "@/lib/api.service";
-import { columnHelper, getRowValues } from "@/lib/table.helpers";
+import { columnHelper } from "@/lib/table.helpers";
 import NewRow from "./NewRow";
 import { createApplication } from "@/lib/api.service";
 import { ApplicationRequest } from "@/@types";
-import { ApplicationValidator, STAGES } from "@/lib/validators/schemas";
-import { z } from "zod";
+import { ApplicationValidator } from "@/lib/validators/schemas";
 
 interface Props {
   applications: Application[] | null;
@@ -46,22 +44,18 @@ const ApplicationsTable = ({ applications }: Props) => {
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  const handleEdit = async (row: Row<Application>) => {
+  const handleEdit = async (
+    value: unknown,
+    columnId: string,
+    rowId: string
+  ) => {
     setDisabled(true);
-    const rowData = getRowValues(row);
-    console.log({ rowData });
-    const id = rowData.find((col) => col.name === "id")?.value as string;
+    const row = table.getRow(rowId);
+    const id = row.original.id;
 
-    const payload = {
-      position: rowData.find((col) => col.name === "position")?.value as string,
-      company: rowData.find((col) => col.name === "company")?.value as string,
-      stage: rowData.find((col) => col.name === "stage")?.value as Stages,
-      dateApplied: rowData.find((col) => col.name === "dateApplied")
-        ?.value as Date,
-      postingUrl: rowData.find((col) => col.name === "postingUrl")
-        ?.value as string,
-    };
-    console.log({ payload });
+    const payload = ApplicationValidator.partial().parse({
+      [columnId]: value,
+    });
 
     const [res, err] = await updateApplication(id, payload);
 
@@ -75,16 +69,15 @@ const ApplicationsTable = ({ applications }: Props) => {
     return true;
   };
 
-  const handleDelete = async (row: Row<Application>) => {
-    const rowData = getRowValues(row);
-    console.log("delete", { rowData });
-    const id = rowData.find((col) => col.name === "id")?.value as string;
+  const handleDelete = async (rowId: string) => {
+    const row = table.getRow(rowId);
+    const id = row.original.id;
 
-    const [res, err] = await deleteApplication(id);
-    console.log({ res });
+    const [ok, err] = await deleteApplication(id);
+    console.log({ ok });
     const dataCopy = [...data];
 
-    if (res && res.ok) {
+    if (ok) {
       dataCopy.splice(row.index, 1);
       setData(dataCopy);
     }
@@ -166,7 +159,7 @@ const ApplicationsTable = ({ applications }: Props) => {
         <Button
           useResetStyles
           variant="custom"
-          onClick={() => handleDelete(info.row)}
+          onClick={() => handleDelete(info.row.id)}
           className="group-hover:text-red-500 md:mx-auto"
           disabled={disabled}
         >
@@ -199,7 +192,7 @@ const ApplicationsTable = ({ applications }: Props) => {
           })
         );
 
-        const ok = await handleEdit(table.getRow(rowId));
+        const ok = await handleEdit(value, columnId, rowId);
         if (!ok) {
           setData(data);
         }

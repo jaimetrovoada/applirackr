@@ -4,6 +4,8 @@ import {
   ApplicationRequest,
   Statistic,
 } from "@/@types";
+import { z } from "zod";
+import { ApplicationValidator } from "./validators/schemas";
 
 const url = process.env.NEXT_PUBLIC_APP_URL;
 export async function createApplication(payload: ApplicationRequest) {
@@ -58,9 +60,10 @@ export async function getUserApplications(cookie: string) {
   }
 }
 
+const PartialValidator = ApplicationValidator.partial();
 export async function updateApplication(
   id: string,
-  payload: ApplicationRequest
+  payload: z.infer<typeof PartialValidator>
 ) {
   try {
     const res = await fetch(`${url}/api/applications/${id}`, {
@@ -100,7 +103,7 @@ export async function deleteApplication(id: string) {
       }
       throw new Error("RequestFailed");
     }
-    return [res, null] as [Response, null];
+    return [res.ok, null] as [Boolean, null];
   } catch (error) {
     console.log({ error });
     return [null, error] as [null, Error];
