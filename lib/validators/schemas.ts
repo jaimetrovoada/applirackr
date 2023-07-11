@@ -12,9 +12,15 @@ export const STAGES = [
 ] as const;
 
 export const ApplicationValidator = z.object({
-  position: z.string().min(1, "Title must contain at least 1 character(s)"),
-  company: z.string().min(1, "Company must contain at least 1 character(s)"),
-  stage: z.enum(STAGES),
+  position: z
+    .string()
+    .min(3, "Title must contain at least 1 character(s)")
+    .max(128),
+  company: z
+    .string()
+    .min(3, "Company must contain at least 1 character(s)")
+    .max(128),
+  stage: z.enum(STAGES).default("SAVED"),
   postingUrl: z.string().url(),
   dateApplied: z.coerce.date().optional().nullable(),
 });
