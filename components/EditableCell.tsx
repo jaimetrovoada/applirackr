@@ -41,7 +41,7 @@ const EditableCell = ({
     return (
       <select
         id="stage"
-        value={initialValue as string}
+        value={value as string}
         onChange={(e) => setValue(e.target.value)}
         onBlur={onBlur}
         onKeyUp={(e) => e.key === "Enter" && onBlur()}
@@ -65,7 +65,7 @@ const EditableCell = ({
         type="date"
         value={
           initialValue
-            ? new Date(initialValue as string).toISOString().slice(0, 10)
+            ? new Date(value as string).toISOString().slice(0, 10)
             : undefined
         }
         onChange={(e) => setValue(e.target.value)}
