@@ -73,7 +73,9 @@ const NewRow = ({ hideNew, submitNew }: Props) => {
         </span>
         <input
           type="date"
-          {...register("dateApplied")}
+          {...register("dateApplied", {
+            max: new Date().toISOString().slice(0, 10),
+          })}
           className="rounded-lg border border-transparent bg-transparent p-1 group-hover:border-gray-600/50"
         />
       </td>

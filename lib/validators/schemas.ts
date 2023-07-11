@@ -22,5 +22,9 @@ export const ApplicationValidator = z.object({
     .max(128),
   stage: z.enum(STAGES).default("SAVED"),
   postingUrl: z.string().url(),
-  dateApplied: z.coerce.date().optional().nullable(),
+  dateApplied: z.coerce
+    .date()
+    .max(new Date(), { message: "Date can't be in the future" })
+    .optional()
+    .nullable(),
 });

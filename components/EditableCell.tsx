@@ -68,6 +68,7 @@ const EditableCell = ({
             ? new Date(value as string).toISOString().slice(0, 10)
             : undefined
         }
+        max={new Date().toISOString().slice(0, 10)}
         onChange={(e) => setValue(e.target.value)}
         onBlur={onBlur}
         onKeyUp={(e) => e.key === "Enter" && onBlur()}
