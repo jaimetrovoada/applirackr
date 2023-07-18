@@ -1,11 +1,7 @@
-import {
-  ApiResponse,
-  Application,
-  ApplicationRequest,
-  Statistic,
-} from "@/@types";
+import { Application, ApplicationRequest } from "@/@types";
 import { z } from "zod";
 import { ApplicationValidator } from "./validators/schemas";
+import { LinkFlow } from "@/lib/utils";
 
 const url = process.env.NEXT_PUBLIC_APP_URL;
 export async function createApplication(payload: ApplicationRequest) {
@@ -112,7 +108,7 @@ export async function deleteApplication(id: string) {
 
 export async function getStatistics(cookie: string) {
   try {
-    const res = await fetch(`${url}/api/applications/statistics`, {
+    const res = await fetch(`${url}/api/applications/analytics`, {
       headers: {
         "Content-Type": "application/json",
         cookie,
@@ -128,7 +124,7 @@ export async function getStatistics(cookie: string) {
       throw new Error("FailedToFetch");
     }
 
-    return [body, null] as [Statistic[], null];
+    return [body, null] as [LinkFlow[], null];
   } catch (error) {
     console.log({ error });
     return [null, error] as [null, Error];
