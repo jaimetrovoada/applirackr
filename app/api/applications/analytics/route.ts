@@ -2,7 +2,7 @@ import { getUser } from "@/lib/auth.service";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { UnauthorizedError } from "@/lib/errors";
-import { generateStageFrequencyTable } from "@/lib/utils";
+import { genStageSankeyData } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
   try {
@@ -20,9 +20,8 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const statusFrequencyArray = generateStageFrequencyTable(applications);
-    console.log({ statusFrequencyArray });
-    return NextResponse.json(statusFrequencyArray);
+    const data = genStageSankeyData(applications);
+    return NextResponse.json(data);
   } catch (error) {
     console.log({ error });
     if (error instanceof UnauthorizedError) {
