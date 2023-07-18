@@ -5,7 +5,6 @@ export const STAGES = [
   "MESSESSAGED_RECRUITER",
   "REFFERED",
   "APPLIED",
-  "FOLLOWED_UP",
   "INTERVIEWED",
   "OFFERED",
   "REJECTED",

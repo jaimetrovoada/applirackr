@@ -3,7 +3,6 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["jsonProtocol"]
 }
 
 datasource db {
@@ -16,7 +15,6 @@ enum Stage {
   MESSESSAGED_RECRUITER
   REFFERED
   APPLIED
-  FOLLOWED_UP
   INTERVIEWED
   OFFERED
   REJECTED
