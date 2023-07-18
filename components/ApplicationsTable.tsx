@@ -1,5 +1,5 @@
 "use client";
-import { Application, Stages } from "@/@types";
+import { Application } from "@/@types";
 import {
   flexRender,
   getCoreRowModel,
@@ -13,15 +13,12 @@ import Button from "./Button";
 import {
   AiOutlineArrowDown,
   AiOutlineArrowUp,
-  AiOutlineDelete,
+  AiOutlinePlus,
 } from "react-icons/ai";
-import EditableCell from "./EditableCell";
-import { deleteApplication, updateApplication } from "@/lib/api.service";
-import { columnHelper } from "@/lib/table.helpers";
+import { columns } from "@/lib/table.helpers";
 import NewRow from "./NewRow";
 import { createApplication } from "@/lib/api.service";
 import { ApplicationRequest } from "@/@types";
-import { ApplicationValidator } from "@/lib/validators/schemas";
 
 interface Props {
   applications: Application[] | null;
@@ -29,148 +26,17 @@ interface Props {
 
 declare module "@tanstack/react-table" {
   interface TableMeta<TData extends RowData> {
-    updateData: (
-      rowIndex: number,
-      columnId: string,
-      value: unknown,
-      rowId: string
-    ) => void;
+    updateData: (rowIndex: number, columnId: string, value: unknown) => void;
+    deleteData: (rowIndex: number) => void;
   }
 }
 
 const ApplicationsTable = ({ applications }: Props) => {
-  const [disabled, setDisabled] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  const handleEdit = async (
-    value: unknown,
-    columnId: string,
-    rowId: string
-  ) => {
-    setDisabled(true);
-    const row = table.getRow(rowId);
-    const id = row.original.id;
-
-    const payload = ApplicationValidator.partial().parse({
-      [columnId]: value,
-    });
-
-    const [res, err] = await updateApplication(id, payload);
-
-    if (res || err) {
-      setDisabled(false);
-    }
-
-    if (err) {
-      return false;
-    }
-    return true;
-  };
-
-  const handleDelete = async (rowId: string) => {
-    const row = table.getRow(rowId);
-    const id = row.original.id;
-
-    const [ok, err] = await deleteApplication(id);
-    console.log({ ok });
-    const dataCopy = [...data];
-
-    if (ok) {
-      dataCopy.splice(row.index, 1);
-      setData(dataCopy);
-    }
-    if (err) {
-      console.log({ err });
-    }
-  };
-
-  const columns = [
-    columnHelper.accessor("position", {
-      header: "Position",
-      cell: (info) => (
-        <EditableCell
-          rowIndex={info.row.index}
-          columnId={info.column.id}
-          rowId={info.row.id}
-          value={info.getValue()}
-          updateMyData={info.table.options.meta?.updateData!}
-          disabled={disabled}
-        />
-      ),
-    }),
-    columnHelper.accessor("company", {
-      header: "Company",
-      cell: (info) => (
-        <EditableCell
-          rowIndex={info.row.index}
-          columnId={info.column.id}
-          rowId={info.row.id}
-          value={info.getValue()}
-          updateMyData={info.table.options.meta?.updateData!}
-          disabled={disabled}
-        />
-      ),
-    }),
-    columnHelper.accessor("stage", {
-      header: "Stage",
-      cell: (info) => (
-        <EditableCell
-          rowIndex={info.row.index}
-          columnId={info.column.id}
-          rowId={info.row.id}
-          value={info.getValue()}
-          updateMyData={info.table.options.meta?.updateData!}
-          disabled={disabled}
-        />
-      ),
-    }),
-    columnHelper.accessor("dateApplied", {
-      header: "Date Applied",
-      cell: (info) => (
-        <EditableCell
-          rowIndex={info.row.index}
-          columnId={info.column.id}
-          rowId={info.row.id}
-          value={info.getValue()?.toString()}
-          updateMyData={info.table.options.meta?.updateData!}
-          disabled={disabled}
-        />
-      ),
-    }),
-    columnHelper.accessor("postingUrl", {
-      header: "Job Post URL",
-      cell: (info) => (
-        <EditableCell
-          rowIndex={info.row.index}
-          columnId={info.column.id}
-          rowId={info.row.id}
-          value={info.getValue()}
-          updateMyData={info.table.options.meta?.updateData!}
-          disabled={disabled}
-        />
-      ),
-    }),
-    columnHelper.accessor(() => "actions", {
-      header: "Actions",
-      enableSorting: false,
-      cell: (info) => (
-        <Button
-          useResetStyles
-          variant="custom"
-          onClick={() => handleDelete(info.row.id)}
-          className="group-hover:text-red-500 md:mx-auto"
-          disabled={disabled}
-        >
-          <AiOutlineDelete size={24} />
-        </Button>
-      ),
-    }),
-    columnHelper.accessor("id", {}),
-  ];
-
   const [data, setData] = useState(() => [...(applications || [])]);
+
   const table = useReactTable({
     data,
     columns,
@@ -178,8 +44,7 @@ const ApplicationsTable = ({ applications }: Props) => {
     getSortedRowModel: getSortedRowModel(),
     // Provide our updateData function to our table meta
     meta: {
-      updateData: async (rowIndex, columnId, value, rowId) => {
-        // Skip page index reset until after next rerender
+      updateData: (rowIndex, columnId, value) => {
         setData((old) =>
           old.map((row, index) => {
             if (index === rowIndex) {
@@ -191,11 +56,9 @@ const ApplicationsTable = ({ applications }: Props) => {
             return row;
           })
         );
-
-        const ok = await handleEdit(value, columnId, rowId);
-        if (!ok) {
-          setData(data);
-        }
+      },
+      deleteData: (rowIndex) => {
+        setData((old) => old.filter((_, index) => index !== rowIndex));
       },
     },
     debugTable: true,
@@ -224,7 +87,12 @@ const ApplicationsTable = ({ applications }: Props) => {
 
   return (
     <>
-      <Button className="w-fit" onClick={() => setIsVisible(true)}>
+      <Button
+        variant="custom"
+        className="inline-flex w-fit items-center gap-2 rounded-lg p-2 hover:bg-zinc-950/70"
+        onClick={() => setIsVisible(true)}
+      >
+        <AiOutlinePlus size={16} />
         Add new
       </Button>
       <div className="w-full overflow-auto rounded-lg border border-gray-600/50">
