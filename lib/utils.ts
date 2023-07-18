@@ -1,6 +1,6 @@
 import { twMerge } from "tailwind-merge";
 import { clsx, type ClassValue } from "clsx";
-import { Application, Statistic } from "@/@types";
+import { Application, Stages } from "@/@types";
 
 export function getClasses(...classes: ClassValue[]) {
   return twMerge(clsx(classes));
@@ -29,27 +29,63 @@ export function objectToCsv(data: Record<string, unknown>[]) {
   return headers.join(",") + "\r\n" + rows;
 }
 
-export function generateStageFrequencyTable(applications: Application[]) {
-  let statusFrequency = new Map<Application["stage"], number>();
-  applications.forEach((application) => {
-    if (statusFrequency.has(application.stage)) {
-      statusFrequency.set(
-        application.stage,
-        statusFrequency.get(application.stage)! + 1
-      );
-    } else {
-      statusFrequency.set(application.stage, 1);
-    }
-  });
+export type LinkFlow = {
+  source: Stages;
+  target: Stages;
+  value: number;
+};
+export function genStageSankeyData(applications: Application[]) {
+  const links: LinkFlow[] = [
+    {
+      source: "SAVED",
+      target: "APPLIED",
+      value: applications.filter(
+        (application) => application.stage === "APPLIED"
+      ).length,
+    },
+    {
+      source: "SAVED",
+      target: "MESSESSAGED_RECRUITER",
+      value: applications.filter(
+        (application) => application.stage === "MESSESSAGED_RECRUITER"
+      ).length,
+    },
+    {
+      source: "APPLIED",
+      target: "INTERVIEWED",
+      value: applications.filter(
+        (application) => application.stage === "INTERVIEWED"
+      ).length,
+    },
+    {
+      source: "MESSESSAGED_RECRUITER",
+      target: "INTERVIEWED",
+      value: applications.filter(
+        (application) => application.stage === "INTERVIEWED"
+      ).length,
+    },
+    {
+      source: "REFFERED",
+      target: "INTERVIEWED",
+      value: applications.filter(
+        (application) => application.stage === "INTERVIEWED"
+      ).length,
+    },
+    {
+      source: "INTERVIEWED",
+      target: "REJECTED",
+      value: applications.filter(
+        (application) => application.stage === "REJECTED"
+      ).length,
+    },
+    {
+      source: "INTERVIEWED",
+      target: "OFFERED",
+      value: applications.filter(
+        (application) => application.stage === "OFFERED"
+      ).length,
+    },
+  ];
 
-  const statusFrequencyArray: Statistic[] = [];
-  statusFrequency.forEach((value, key) => {
-    statusFrequencyArray.push({
-      status: key,
-      count: value,
-      pct: value / applications.length,
-    });
-  });
-
-  return statusFrequencyArray;
+  return links;
 }
