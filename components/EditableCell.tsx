@@ -1,35 +1,49 @@
 import { STAGES } from "@/lib/validators/schemas";
-import { useState, useEffect } from "react";
-
-interface Props {
-  value: string | undefined;
-  rowIndex: number;
-  columnId: string;
-  rowId: string;
-  updateMyData: (
-    rowIndex: number,
-    columnId: string,
-    value: unknown,
-    rowId: string
-  ) => void;
-  disabled?: boolean;
-}
+import { useState, useEffect, useCallback } from "react";
+import { useDebounce } from "@/lib/useDebounce.hook";
+import { ApplicationValidator } from "@/lib/validators/schemas";
+import { updateApplication } from "@/lib/api.service";
+import { CellContext } from "@tanstack/react-table";
+import { Application } from "@/@types";
 
 const EditableCell = ({
-  value: initialValue,
-  rowIndex,
-  columnId,
-  rowId,
-  updateMyData, // This is a custom function that we supplied to our table instance
-  disabled = false,
-}: Props) => {
+  getValue,
+  row,
+  column,
+  table,
+}: CellContext<Application, string | Date | null | undefined>) => {
+  const initialValue = getValue();
   // We need to keep and update the state of the cell normally
   const [value, setValue] = useState(initialValue);
+  const debouncedValue = useDebounce(value, 300);
 
-  // When the input is blurred, we'll call our table meta's updateData function
-  const onBlur = () => {
-    console.log({ rowIndex, columnId, value, rowId });
-    updateMyData(rowIndex, columnId, value, rowId);
+  const handleEdit = useCallback(
+    async (value: unknown) => {
+      const payload = ApplicationValidator.partial().parse({
+        [column.id]: value,
+      });
+
+      const [res, err] = await updateApplication(row.original.id, payload);
+      console.log({ res, err, payload });
+
+      if (!err) {
+        table.options.meta?.updateData(row.index, column.id, value);
+      }
+    },
+    [row.original.id, column.id, table.options.meta, row.index]
+  );
+
+  useEffect(() => {
+    console.log({ debouncedValue });
+    if (debouncedValue !== initialValue) {
+      handleEdit(debouncedValue);
+    }
+  }, [debouncedValue]);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    setValue(e.target.value);
   };
 
   // If the initialValue is changed external, sync it up with our state
@@ -37,16 +51,13 @@ const EditableCell = ({
     setValue(initialValue);
   }, [initialValue]);
 
-  if (columnId === "stage") {
+  if (column.id === "stage") {
     return (
       <select
         id="stage"
         value={value as string}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={onBlur}
-        onKeyUp={(e) => e.key === "Enter" && onBlur()}
+        onChange={handleChange}
         className="rounded-lg border border-transparent bg-transparent p-1 uppercase focus-within:rounded-b-none group-hover:border-gray-600/50"
-        disabled={disabled}
       >
         <optgroup className="bg-zinc-900 uppercase text-white" label="Stage">
           {STAGES.map((stage) => (
@@ -59,7 +70,7 @@ const EditableCell = ({
     );
   }
 
-  if (columnId === "dateApplied") {
+  if (column.id === "dateApplied") {
     return (
       <input
         type="date"
@@ -69,22 +80,16 @@ const EditableCell = ({
             : undefined
         }
         max={new Date().toISOString().slice(0, 10)}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={onBlur}
-        onKeyUp={(e) => e.key === "Enter" && onBlur()}
+        onChange={handleChange}
         className="rounded-lg border border-transparent bg-transparent p-1 group-hover:border-gray-600/50"
-        disabled={disabled}
       />
     );
   }
   return (
     <input
       value={value as string}
-      onChange={(e) => setValue(e.target.value)}
-      onBlur={onBlur}
-      onKeyUp={(e) => e.key === "Enter" && onBlur()}
+      onChange={handleChange}
       className="rounded-lg border border-transparent bg-transparent p-1 group-hover:border-gray-600/50"
-      disabled={disabled}
     />
   );
 };
