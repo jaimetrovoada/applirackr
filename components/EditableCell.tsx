@@ -1,5 +1,5 @@
 import { STAGES } from "@/lib/validators/schemas";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useDebounce } from "@/lib/useDebounce.hook";
 import { ApplicationValidator } from "@/lib/validators/schemas";
 import { updateApplication } from "@/lib/api.service";
@@ -17,27 +17,24 @@ const EditableCell = ({
   const [value, setValue] = useState(initialValue);
   const debouncedValue = useDebounce(value, 300);
 
-  const handleEdit = useCallback(
-    async (value: unknown) => {
-      const payload = ApplicationValidator.partial().parse({
-        [column.id]: value,
-      });
+  const handleEdit = async (value: unknown) => {
+    const payload = ApplicationValidator.partial().parse({
+      [column.id]: value,
+    });
 
-      const [res, err] = await updateApplication(row.original.id, payload);
-      console.log({ res, err, payload });
+    const [res, err] = await updateApplication(row.original.id, payload);
+    console.log({ res, err, payload });
 
-      if (!err) {
-        table.options.meta?.updateData(row.index, column.id, value);
-      }
-    },
-    [row.original.id, column.id, table.options.meta, row.index]
-  );
-
+    if (!err) {
+      table.options.meta?.updateData(row.index, column.id, value);
+    }
+  };
   useEffect(() => {
     console.log({ debouncedValue });
     if (debouncedValue !== initialValue) {
       handleEdit(debouncedValue);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedValue]);
 
   const handleChange = (

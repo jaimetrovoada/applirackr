@@ -8,10 +8,4 @@ export type Application = ApplicationRequest & {
   createdAt: Date;
 };
 
-export type Statistic = {
-  status: Application["stage"];
-  count: number | undefined;
-  pct: number | undefined;
-};
-
 export type Stages = z.infer<typeof ApplicationValidator>["stage"];

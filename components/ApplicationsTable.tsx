@@ -7,6 +7,7 @@ import {
   RowData,
   SortingState,
   getSortedRowModel,
+  getPaginationRowModel,
 } from "@tanstack/react-table";
 import { useState } from "react";
 import Button from "./Button";
@@ -42,6 +43,7 @@ const ApplicationsTable = ({ applications }: Props) => {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     // Provide our updateData function to our table meta
     meta: {
       updateData: (rowIndex, columnId, value) => {
@@ -70,6 +72,7 @@ const ApplicationsTable = ({ applications }: Props) => {
     },
     onSortingChange: setSorting,
   });
+  const { pageSize, pageIndex } = table.getState().pagination;
 
   const hideNew = () => {
     setIsVisible(false);

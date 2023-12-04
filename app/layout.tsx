@@ -25,7 +25,9 @@ export default async function RootLayout({
         }
       >
         <Header user={user} />
-        {children}
+        <main className="container mx-auto flex flex-1 flex-col gap-4 p-4 lg:px-0">
+          {children}
+        </main>
       </body>
     </html>
   );

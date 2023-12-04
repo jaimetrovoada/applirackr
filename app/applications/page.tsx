@@ -14,9 +14,11 @@ export default async function Page() {
   }
 
   return (
-    <main className="container mx-auto flex flex-1 flex-col gap-4 p-4 lg:px-0">
-      <Graphs data={statistics} />
+    <>
+      {
+        // <Graphs data={statistics} />
+      }
       <ApplicationsTable applications={res} />
-    </main>
+    </>
   );
 }
