@@ -18,7 +18,7 @@ const JobForm = () => {
     formState: { errors },
   } = useForm<Inputs>({
     defaultValues: {
-      status: "SAVED",
+      stage: "SAVED",
     },
     resolver: zodResolver(
       ApplicationValidator.required({
@@ -39,9 +39,9 @@ const JobForm = () => {
     <Form onSubmit={handleSubmit(submit)} onReset={() => reset}>
       <Form.Input
         register={register}
-        error={errors.title}
-        name="title"
-        label="Title"
+        error={errors.position}
+        name="position"
+        label="Position"
       />
       <Form.Input
         register={register}
@@ -51,7 +51,7 @@ const JobForm = () => {
       />
       <div className="flex flex-row gap-4">
         <label htmlFor="">Status</label>
-        <select id="status" {...register("status")}>
+        <select id="status" {...register("stage")}>
           <option value="SAVED">saved</option>
           <option value="APPLIED">applied</option>
           <option value="INTERVIEW">interview</option>
